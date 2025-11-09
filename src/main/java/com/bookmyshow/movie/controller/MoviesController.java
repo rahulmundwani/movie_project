@@ -57,8 +57,13 @@ public class MoviesController {
     @PutMapping("/{movieId}")
     public ResponseEntity<?> updateMovieDetails ( @PathVariable long movieId,
                                                   @Valid @RequestBody MovieRequest movieRequest){
-
-
+        try {
+            MovieResponse movieResponse = moviesService.updateMovie(movieId, movieRequest);
+            return ResponseEntity.ok(movieResponse);
+        }catch (MovieNotFoundException ex){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ErrorResponse.builder().error("Movie Not Found.")
+                    .timestamp(LocalDateTime.now()).build());
+        }
     }
 
 }
