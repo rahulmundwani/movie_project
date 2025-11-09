@@ -62,4 +62,8 @@ public class MoviesService {
         return movieMapper.movieToMovieResponse(movieRepository.save(updatedMovie));
     }
 
+    public void deleteMovieById(long movieId){
+        movieRepository.deleteById(movieId);
+    }
+
 }
