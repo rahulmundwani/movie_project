@@ -1,12 +1,13 @@
 package com.bookmyshow.movie.controller;
 
-
 import com.bookmyshow.movie.dto.ErrorResponse;
 import com.bookmyshow.movie.dto.MovieRequest;
 import com.bookmyshow.movie.dto.MovieResponse;
 import com.bookmyshow.movie.dto.SuccessResponse;
 import com.bookmyshow.movie.exceptions.MovieNotFoundException;
+import com.bookmyshow.movie.exceptions.ShowNotFoundException;
 import com.bookmyshow.movie.service.MoviesService;
+import com.bookmyshow.movie.service.ShowService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -21,9 +22,12 @@ public class MoviesController {
 
     private final MoviesService moviesService;
 
+    private final ShowService showService;
+
     @Autowired
-    public MoviesController(MoviesService moviesService) {
+    public MoviesController(MoviesService moviesService, ShowService showService) {
         this.moviesService = moviesService;
+        this.showService = showService;
     }
 
 
@@ -57,8 +61,25 @@ public class MoviesController {
     @PutMapping("/{movieId}")
     public ResponseEntity<?> updateMovieDetails ( @PathVariable long movieId,
                                                   @Valid @RequestBody MovieRequest movieRequest){
+        try {
+            MovieResponse movieResponse = moviesService.updateMovie(movieId, movieRequest);
+            return ResponseEntity.ok(movieResponse);
+        }catch (MovieNotFoundException ex){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ErrorResponse.builder().error("Movie Not Found.")
+                    .timestamp(LocalDateTime.now()).build());
+        }
+    }
 
-
+    @DeleteMapping("/{movieId}")
+    public ResponseEntity<?> deleteMovie(@PathVariable long movieId){
+        try {
+            if(showService.getShowByMovieId(movieId)){
+                moviesService.deleteMovieById(movieId);
+            }
+        }catch (ShowNotFoundException ex){
+            ResponseEntity.status(HttpStatus.CONFLICT).body(null);
+        }
+        return ResponseEntity.noContent().build();
     }
 
 }

@@ -49,15 +49,21 @@ public class MoviesService {
 
     public MovieResponse updateMovie(long movieId,
                                      MovieRequest movieRequest){
-
         Optional<Movie> movie = movieRepository.findById(movieId);
 
         if(movie.isEmpty()){
             throw new MovieNotFoundException();
         }
 
-        return movieMapper.movieToMovieResponse(movie.get());
+        Movie updatedMovie = Movie.builder().movieId(movieId).title(movieRequest.getTitle()).genre(movieRequest.getGenre())
+                .durationInMin(movieRequest.getDurationInMin()).language(movieRequest.getLanguage())
+                .releaseDate(movieRequest.getReleaseDate()).build();
 
+        return movieMapper.movieToMovieResponse(movieRepository.save(updatedMovie));
+    }
+
+    public void deleteMovieById(long movieId){
+        movieRepository.deleteById(movieId);
     }
 
 }
