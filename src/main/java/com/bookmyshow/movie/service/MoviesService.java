@@ -10,6 +10,7 @@ import com.bookmyshow.movie.repository.MovieRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -66,4 +67,10 @@ public class MoviesService {
         movieRepository.deleteById(movieId);
     }
 
+    public List<Movie> searchMovies(String genre, String language, int year) {
+
+        List<Movie> movies = movieRepository.findByGenreAndLanguage(genre, language);
+
+        return movies.stream().filter(movie -> movie.getReleaseDate().getYear() == year).toList();
+    }
 }

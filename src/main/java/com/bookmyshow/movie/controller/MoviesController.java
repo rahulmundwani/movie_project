@@ -6,6 +6,7 @@ import com.bookmyshow.movie.dto.MovieResponse;
 import com.bookmyshow.movie.dto.SuccessResponse;
 import com.bookmyshow.movie.exceptions.MovieNotFoundException;
 import com.bookmyshow.movie.exceptions.ShowNotFoundException;
+import com.bookmyshow.movie.model.Movie;
 import com.bookmyshow.movie.service.MoviesService;
 import com.bookmyshow.movie.service.ShowService;
 import jakarta.validation.Valid;
@@ -46,40 +47,51 @@ public class MoviesController {
     }
 
     @GetMapping("/{movieId}")
-    public ResponseEntity<?> getMovieDetails(@PathVariable long movieId){
-        if(movieId <= 0){
+    public ResponseEntity<?> getMovieDetails(@PathVariable long movieId) {
+        if (movieId <= 0) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
-        try{
+        try {
             MovieResponse movieResponse = moviesService.getMovieDetails(movieId);
             return ResponseEntity.status(HttpStatus.OK).body(movieResponse);
-        }catch (MovieNotFoundException ex){
+        } catch (MovieNotFoundException ex) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
     }
 
     @PutMapping("/{movieId}")
-    public ResponseEntity<?> updateMovieDetails ( @PathVariable long movieId,
-                                                  @Valid @RequestBody MovieRequest movieRequest){
+    public ResponseEntity<?> updateMovieDetails(@PathVariable long movieId,
+                                                @Valid @RequestBody MovieRequest movieRequest) {
         try {
             MovieResponse movieResponse = moviesService.updateMovie(movieId, movieRequest);
             return ResponseEntity.ok(movieResponse);
-        }catch (MovieNotFoundException ex){
+        } catch (MovieNotFoundException ex) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ErrorResponse.builder().error("Movie Not Found.")
                     .timestamp(LocalDateTime.now()).build());
         }
     }
 
     @DeleteMapping("/{movieId}")
-    public ResponseEntity<?> deleteMovie(@PathVariable long movieId){
+    public ResponseEntity<?> deleteMovie(@PathVariable long movieId) {
         try {
-            if(showService.getShowByMovieId(movieId)){
+            if (showService.getShowByMovieId(movieId)) {
                 moviesService.deleteMovieById(movieId);
             }
-        }catch (ShowNotFoundException ex){
+        } catch (ShowNotFoundException ex) {
             ResponseEntity.status(HttpStatus.CONFLICT).body(null);
         }
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<Movie>> searchMovies(@RequestParam(value = "genre") String genre,
+                                                            @RequestParam(value = "language") String language,
+                                                            @RequestParam(value = "genre") int year) {
+
+        List<Movie> movies = moviesService.searchMovies(genre, language, year);
+
+        return ResponseEntity.ok(movies);
+
     }
 
 }
